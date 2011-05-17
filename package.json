@@ -1,0 +1,25 @@
+{
+  "name": "traceur",
+  "description": "Traceur compiler for node.js",
+  "version": "1.0.0",
+  "homepage": "http://aikar.co/traceur",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:aikar/traceur"
+  },
+  "author": "Aikar <aikar@aikar.co>",
+  "main": "traceur.js",
+  "devDependencies": {
+    "vows": ""
+  },
+  "bugs": {
+    "mail": "aikar@aikar.co",
+    "web": "https://github.com/aikar/traceur/issues"
+  },
+  "scripts": {
+    "test": "./runTest.js"
+  },
+  "engines": {
+    "node": ">=0.4.0"
+  }
+}
