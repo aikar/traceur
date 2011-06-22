@@ -21,10 +21,12 @@
   //global.traceur = traceurContext.traceur;
   var traceur = global.traceur;
   
+  // this function is silly and makes traceur unusable. so disable it.
   traceur.semantics.FreeVariableChecker.checkProgram = function() {}
   
   
   delete global.importScript;
+  
   var orig = require.extensions['.js'];
   require.extensions['.js'] = function(module, filename) {
     var reporter = new traceur.util.ErrorReporter();
