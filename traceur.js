@@ -5,7 +5,7 @@
       path = require('path');
 
   function importScript(filename) {
-    filename = path.join(path.dirname(process.argv[1]) + '/traceur/src', filename);
+    filename = path.join(__dirname + '/traceur/src', filename);
     
     var data = fs.readFileSync(filename);
     if (!data) {
