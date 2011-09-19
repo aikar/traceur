@@ -196,7 +196,7 @@ traceur.define('syntax', function() {
               tree.left.isPattern(),
               tree.left,
               'left hand side expression or pattern expected');
-          this.check_(tree.right.isAssignmentExpression(),
+          this.check_(tree.right.isArrowFunctionExpression(),
               tree.right,
               'assignment expression expected');
           break;
@@ -235,9 +235,9 @@ traceur.define('syntax', function() {
         case TokenType.STAR:
         case TokenType.SLASH:
         case TokenType.PERCENT:
-          this.check_(tree.left.isAssignmentExpression(), tree.left,
+          this.check_(tree.left.isArrowFunctionExpression(), tree.left,
               'assignment expression expected');
-          this.check_(tree.right.isAssignmentExpression(), tree.right,
+          this.check_(tree.right.isArrowFunctionExpression(), tree.right,
               'assignment expression expected');
           break;
 
@@ -323,7 +323,7 @@ traceur.define('syntax', function() {
     visitCommaExpression: function(tree) {
       for (var i = 0; i < tree.expressions.length; i++) {
         var expression = tree.expressions[i];
-        this.checkVisit_(expression.isAssignmentExpression(), expression,
+        this.checkVisit_(expression.isArrowFunctionExpression(), expression,
             'expression expected');
       }
     },
@@ -332,11 +332,11 @@ traceur.define('syntax', function() {
      * @param {traceur.syntax.trees.ConditionalExpression} tree
      */
     visitConditionalExpression: function(tree) {
-      this.checkVisit_(tree.condition.isAssignmentExpression(), tree.condition,
+      this.checkVisit_(tree.condition.isArrowFunctionExpression(), tree.condition,
           'expression expected');
-      this.checkVisit_(tree.left.isAssignmentExpression(), tree.left,
+      this.checkVisit_(tree.left.isArrowFunctionExpression(), tree.left,
           'expression expected');
-      this.checkVisit_(tree.right.isAssignmentExpression(), tree.right,
+      this.checkVisit_(tree.right.isArrowFunctionExpression(), tree.right,
           'expression expected');
     },
 
@@ -522,6 +522,11 @@ traceur.define('syntax', function() {
             // not a rest or another default parameter.
             break;
 
+          case ParseTreeType.BIND_THIS_PARAMETER:
+            // TODO: this must be the first parameter, and is only legal in an
+            // arrow expression (->)
+            break;
+
           default:
             this.fail_(parameter, 'parameters must be identifiers or rest' +
                 ' parameters');
@@ -694,12 +699,13 @@ traceur.define('syntax', function() {
         switch (propertyNameAndValue.type) {
           case ParseTreeType.GET_ACCESSOR:
           case ParseTreeType.SET_ACCESSOR:
+          case ParseTreeType.PROPERTY_METHOD_ASSIGNMENT:
           case ParseTreeType.PROPERTY_NAME_ASSIGNMENT:
           case ParseTreeType.PROPERTY_NAME_SHORTHAND:
             break;
           default:
             this.fail_(propertyNameAndValue,
-                'accessor or property name assignment expected');
+                'accessor, property name assignment or property method assigment expected');
         }
         this.visitAny(propertyNameAndValue);
       }
@@ -745,7 +751,7 @@ traceur.define('syntax', function() {
      * @param {traceur.syntax.trees.PostfixExpression} tree
      */
     visitPostfixExpression: function(tree) {
-      this.checkVisit_(tree.operand.isAssignmentExpression(), tree.operand,
+      this.checkVisit_(tree.operand.isArrowFunctionExpression(), tree.operand,
           'assignment expression expected');
     },
 
@@ -765,7 +771,7 @@ traceur.define('syntax', function() {
      * @param {traceur.syntax.trees.PropertyNameAssignment} tree
      */
     visitPropertyNameAssignment: function(tree) {
-      this.checkVisit_(tree.value.isAssignmentExpression(), tree.value,
+      this.checkVisit_(tree.value.isArrowFunctionExpression(), tree.value,
           'assignment expression expected');
     },
 
@@ -807,7 +813,7 @@ traceur.define('syntax', function() {
      * @param {traceur.syntax.trees.SpreadExpression} tree
      */
     visitSpreadExpression: function(tree) {
-      this.checkVisit_(tree.expression.isAssignmentExpression(),
+      this.checkVisit_(tree.expression.isArrowFunctionExpression(),
           tree.expression,
           'assignment expression expected');
     },
@@ -895,7 +901,7 @@ traceur.define('syntax', function() {
      * @param {traceur.syntax.trees.UnaryExpression} tree
      */
     visitUnaryExpression: function(tree) {
-      this.checkVisit_(tree.operand.isAssignmentExpression(), tree.operand,
+      this.checkVisit_(tree.operand.isArrowFunctionExpression(), tree.operand,
           'assignment expression expected');
     },
 
@@ -904,7 +910,7 @@ traceur.define('syntax', function() {
      */
     visitVariableDeclaration: function(tree) {
       if (tree.initializer !== null) {
-        this.checkVisit_(tree.initializer.isAssignmentExpression(),
+        this.checkVisit_(tree.initializer.isArrowFunctionExpression(),
             tree.initializer, 'assignment expression expected');
       }
     },

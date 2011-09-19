@@ -16,13 +16,9 @@ traceur.define('syntax.trees', function() {
   'use strict';
 
   var assert = traceur.assert;
-  var ParseTreeType = traceur.syntax.trees.ParseTreeType;
+  var ParseTreeType = {};
 
   var typeToNameMap = Object.create(null);
-
-  // Add the exceptions
-  typeToNameMap[ParseTreeType.NULL] = 'NullTree';
-  typeToNameMap[ParseTreeType.IMPORT_PATH] = 'ImportPath';
 
   function getCapitalizedName(type) {
     var name = type.toString();
@@ -93,7 +89,7 @@ traceur.define('syntax.trees', function() {
   ParseTree.prototype = {
     /** @return {boolean} */
     isNull: function() {
-      return this.type === ParseTreeType.NULL;
+      return this.type === ParseTreeType.NULL_TREE;
     },
 
     /** @return {boolean} */
@@ -134,8 +130,9 @@ traceur.define('syntax.trees', function() {
 
     // TODO: enable classes and traits
     /** @return {boolean} */
-    isAssignmentExpression: function() {
+    isArrowFunctionExpression: function() {
       switch (this.type) {
+        case ParseTreeType.ARROW_FUNCTION_EXPRESSION:
         case ParseTreeType.FUNCTION_DECLARATION:
         case ParseTreeType.BINARY_OPERATOR:
         case ParseTreeType.THIS_EXPRESSION:
@@ -199,13 +196,13 @@ traceur.define('syntax.trees', function() {
 
     /** @return {boolean} */
     isExpression: function() {
-      return this.isAssignmentExpression() ||
+      return this.isArrowFunctionExpression() ||
           this.type == ParseTreeType.COMMA_EXPRESSION;
     },
 
     /** @return {boolean} */
     isAssignmentOrSpread: function() {
-      return this.isAssignmentExpression() ||
+      return this.isArrowFunctionExpression() ||
           this.type == ParseTreeType.SPREAD_EXPRESSION;
     },
 
@@ -293,6 +290,7 @@ traceur.define('syntax.trees', function() {
 
   return {
     getTreeNameForType: getTreeNameForType,
-    ParseTree: ParseTree
+    ParseTree: ParseTree,
+    ParseTreeType: ParseTreeType
   };
 });

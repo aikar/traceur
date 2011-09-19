@@ -126,6 +126,17 @@ traceur.define('codegeneration', function() {
     },
 
     /**
+     * @param {traceur.syntax.trees.ArrowFunctionExpression} tree
+     */
+    visitArrowFunctionExpression: function(tree) {
+      this.write_(TokenType.OPEN_PAREN);
+      this.visitAny(tree.formalParameters);
+      this.write_(TokenType.CLOSE_PAREN);
+      this.write_(tree.arrow);
+      this.visitAny(tree.functionBody);
+    },
+
+    /**
      * @param {AwaitStatement} tree
      */
     visitAwaitStatement: function(tree) {
@@ -145,6 +156,15 @@ traceur.define('codegeneration', function() {
       this.visitAny(tree.left);
       this.write_(tree.operator);
       this.visitAny(tree.right);
+    },
+
+    /**
+     * @param {BindThisParameter} tree
+     */
+    visitBindThisParameter: function(tree) {
+      this.write_(TokenType.THIS);
+      this.write_(TokenType.EQUAL);
+      this.visitAny(tree.expression);
     },
 
     /**
@@ -739,6 +759,17 @@ traceur.define('codegeneration', function() {
      */
     visitProgram: function(tree) {
       this.writelnList_(tree.programElements);
+    },
+
+    /**
+     * @param {PropertyMethodAssignment} tree
+     */
+    visitPropertyMethodAssignment: function(tree) {
+      this.write_(tree.name);
+      this.write_(TokenType.OPEN_PAREN);
+      this.visitAny(tree.formalParameterList);
+      this.write_(TokenType.CLOSE_PAREN);
+      this.visitAny(tree.functionBody);
     },
 
     /**

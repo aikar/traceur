@@ -1,7 +1,7 @@
 {
   "name": "traceur",
   "description": "Traceur compiler for node.js",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "homepage": "http://aikar.co/traceur",
   "repository": {
     "type": "git",

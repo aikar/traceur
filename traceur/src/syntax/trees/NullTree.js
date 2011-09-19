@@ -20,14 +20,17 @@ traceur.define('syntax.trees', function() {
 
   var instance;
 
+  ParseTreeType.NULL_TREE = 'NULL_TREE';
+
   /**
+   * TODO: this was a Java-ism. Remove and use 'null' instead.
    * @constructor
    * @extends {ParseTree}
    */
   function NullTree() {
     if (instance)
       return instance;
-    ParseTree.call(this, ParseTreeType.NULL, null);
+    ParseTree.call(this, ParseTreeType.NULL_TREE, null);
     Object.freeze(this);
     instance = this;
   }
