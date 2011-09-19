@@ -5,6 +5,13 @@ Traceur provides support for Googles Traceur project which adds many enhanced
 features to the JavaScript language. For full details on what all Traceur does,
 visit <http://code.google.com/p/traceur-compiler/wiki/LanguageFeatures>
 
+## WARNING
+Traceur has a pretty big impact on performance at this time.
+If you want to use Traceur, I strongly recommend requireing() all files on process start, and understand there will be a sizable delay...
+
+For example, node-optimist at around 500 lines of code takes 176ms to translate (which doesn't even use Traceur syntax!)
+
+Use at own risk
 
 ## Install
 Traceur is ready to be installed from NPM, but may also be manually added
