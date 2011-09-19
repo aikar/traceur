@@ -33,7 +33,7 @@ traceur.define('semantics.symbols', function() {
     this.tree = tree;
     if (!url) {
       // TODO(arv): Find offensive callers.
-      console.error('Missing URL');
+      //console.error('Missing URL');
     }
     this.url = url;
   }
