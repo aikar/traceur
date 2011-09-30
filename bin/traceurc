@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Copyright 2011 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +16,9 @@
 
 (function() {
   'use strict';
-
-  if (process.argv.length <= 2) {
-    console.log('Usage: node ' + process.argv[1] + ' filename.js...');
+  var runtimestub = 'traceur = global.traceur || {};require("traceur-runtime");';
+  if (process.argv.length !== 4) {
+    console.log('Usage: traceurc inputdir/ outdir/');
     process.exit(1);
   }
 
@@ -30,7 +32,7 @@
    * @param {string} filename
    */
   function importScript(filename) {
-    filename = path.join(path.dirname(process.argv[1]), filename);
+    filename = path.join(__dirname + '/../traceur/src', filename);
     var data = fs.readFileSync(filename);
     if (!data) {
       throw new Error('Failed to import ' + filename);
@@ -43,7 +45,7 @@
   global.importScript = importScript;
 
   importScript('./traceur.js');
-
+  global.traceur.semantics.FreeVariableChecker.checkProgram = function() {}
   /**
    * Recursively makes all directoires, similar to mkdir -p
    * @param {string} dir
@@ -76,9 +78,9 @@
     return fileparts.slice(i).join('/');
   }
 
-  function compileFiles(filenames) {
+  function compileFiles(outputdir, filenames) {
     var reporter = new traceur.util.ErrorReporter();
-    var project = new traceur.semantics.symbols.Project(process.cwd());
+    var project = new traceur.semantics.symbols.Project();
 
     console.log('Reading files...');
     var success = filenames.every(function(filename) {
@@ -110,24 +112,45 @@
       var tree = results.get(file);
       var filename = file.name;
       var result = traceur.codegeneration.ParseTreeWriter.write(tree, false);
-
+      result = runtimestub + result;
       // Compute the output path
-      var outputdir = fs.realpathSync(process.cwd());
       var filedir = fs.realpathSync(path.dirname(filename));
       filedir = removeCommonPrefix(outputdir, filedir);
-      outputdir = path.join(outputdir, 'out', filedir);
+      var outdir = path.join(outputdir, filedir);
 
-      mkdirRecursive(outputdir);
-      var outputfile = path.join(outputdir, path.basename(filename));
+      mkdirRecursive(outdir);
+      var outputfile = path.join(outdir, path.basename(filename));
       fs.writeFileSync(outputfile, new Buffer(result));
-      console.log('Writing of out/' + filename + ' successful.');
+      console.log('Writing of ' + outputfile + ' successful.');
     });
 
     return true;
   }
-
-  var success = compileFiles(process.argv.slice(2));
-  if (!success) {
+  var files = [];
+  function getFileNames(dir) {
+    fs.readdirSync(dir).forEach(function(file) {
+      var full = dir + '/' + file;
+      if (fs.statSync(full).isDirectory()) {
+        getFileNames(full);
+      } else if (path.extname(file) == '.js') {
+        files.push(full);
+      }
+    });
+  }
+  getFileNames(process.argv[2]);
+  
+  var outdir = path.resolve(process.cwd(), process.argv[3]);
+  mkdirRecursive(outdir);
+  var outputdir = fs.realpathSync(outdir);
+  if (!compileFiles(outputdir, files)) {
     process.exit(2);
+  } else {
+    mkdirRecursive(outputdir + '/node_modules/');
+    var runtime =  fs.readFileSync(path.join(__dirname + '/../traceur/src/runtime/runtime.js')).toString();
+    // fix bug in traceur
+    runtime = runtime.replace('traceur.syntax.PredefinedName.ITERATOR','"__iterator__"');
+    // make traceur global.
+    runtime = runtime.replace('var traceur =','traceur =');
+    fs.writeFileSync(outputdir + '/node_modules/traceur-runtime.js', runtime);
   }
 })();

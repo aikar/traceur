@@ -45,7 +45,7 @@ traceur.define('codegeneration', function() {
   var ExpressionStatement = traceur.syntax.trees.ExpressionStatement;
   var FieldDeclaration = traceur.syntax.trees.FieldDeclaration;
   var Finally = traceur.syntax.trees.Finally;
-  var ForEachStatement = traceur.syntax.trees.ForEachStatement;
+  var ForOfStatement = traceur.syntax.trees.ForOfStatement;
   var ForInStatement = traceur.syntax.trees.ForInStatement;
   var ForStatement = traceur.syntax.trees.ForStatement;
   var FormalParameterList = traceur.syntax.trees.FormalParameterList;
@@ -140,26 +140,6 @@ traceur.define('codegeneration', function() {
    */
   function createEmptyParameters() {
     return [];
-  }
-
-  /**
-   * @param {IdentifierToken|FormalParameterList} parameter
-   * @return {Array.<string>}
-   */
-  function createParameters(parameter) {
-    if (parameter instanceof IdentifierToken)
-      return [parameter.value];
-
-    var builder = [];
-
-    parameter.parameters.forEach(function(parameter) {
-      if (!parameter.isRestParameter()) {
-        // TODO: array and object patterns
-        builder.push(parameter.identifierToken.value);
-      }
-    });
-
-    return builder;
   }
 
   /**
@@ -606,10 +586,10 @@ traceur.define('codegeneration', function() {
    * @param {VariableDeclarationList} initializer
    * @param {ParseTree} collection
    * @param {ParseTree} body
-   * @return {ForEachStatement}
+   * @return {ForOfStatement}
    */
-  function createForEachStatement(initializer, collection, body) {
-    return new ForEachStatement(null, initializer, collection, body);
+  function createForOfStatement(initializer, collection, body) {
+    return new ForOfStatement(null, initializer, collection, body);
   }
 
   /**
@@ -1134,7 +1114,7 @@ traceur.define('codegeneration', function() {
       createFalseLiteral: createFalseLiteral,
       createFieldDeclaration: createFieldDeclaration,
       createFinally: createFinally,
-      createForEachStatement: createForEachStatement,
+      createForOfStatement: createForOfStatement,
       createForInStatement: createForInStatement,
       createForStatement: createForStatement,
       createFunctionDeclaration: createFunctionDeclaration,
@@ -1162,7 +1142,6 @@ traceur.define('codegeneration', function() {
       createParameterList: createParameterList,
       createParameterListWithRestParams: createParameterListWithRestParams,
       createParameterReference: createParameterReference,
-      createParameters: createParameters,
       createParenExpression: createParenExpression,
       createPostfixExpression: createPostfixExpression,
       createProgram: createProgram,

@@ -396,7 +396,7 @@ traceur.define('codegeneration', function() {
      */
     visitFieldDeclaration: function(tree) {
       if (tree.isStatic) {
-        this.write_(TokenType.CLASS);
+        this.write_(TokenType.STATIC);
       }
       if (tree.isConst) {
         this.write_(TokenType.CONST);
@@ -414,13 +414,13 @@ traceur.define('codegeneration', function() {
     },
 
     /**
-     * @param {ForEachStatement} tree
+     * @param {ForOfStatement} tree
      */
-    visitForEachStatement: function(tree) {
+    visitForOfStatement: function(tree) {
       this.write_(TokenType.FOR);
       this.write_(TokenType.OPEN_PAREN);
       this.visitAny(tree.initializer);
-      this.write_(TokenType.COLON);
+      this.write_(PredefinedName.OF);
       this.visitAny(tree.collection);
       this.write_(TokenType.CLOSE_PAREN);
       this.visitAny(tree.body);
@@ -478,7 +478,7 @@ traceur.define('codegeneration', function() {
      */
     visitFunctionDeclaration: function(tree) {
       if (tree.isStatic) {
-        this.write_(TokenType.CLASS);
+        this.write_(TokenType.STATIC);
       }
       this.write_(Keywords.FUNCTION);
       if (tree.name != null) {
@@ -495,7 +495,7 @@ traceur.define('codegeneration', function() {
      */
     visitGetAccessor: function(tree) {
       if (tree.isStatic) {
-        this.write_(TokenType.CLASS);
+        this.write_(TokenType.STATIC);
       }
       this.write_(PredefinedName.GET);
       this.write_(tree.propertyName);
@@ -828,7 +828,7 @@ traceur.define('codegeneration', function() {
      */
     visitSetAccessor: function(tree) {
       if (tree.isStatic) {
-        this.write_(TokenType.CLASS);
+        this.write_(TokenType.STATIC);
       }
       this.write_(PredefinedName.SET);
       this.write_(tree.propertyName);

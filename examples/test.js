@@ -1,0 +1,4 @@
+require('../');
+require('./testtraceur.js');
+
+

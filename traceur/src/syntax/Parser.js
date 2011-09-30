@@ -55,7 +55,7 @@ traceur.define('syntax', function() {
   var ExpressionStatement = traceur.syntax.trees.ExpressionStatement;
   var FieldDeclaration = traceur.syntax.trees.FieldDeclaration;
   var Finally = traceur.syntax.trees.Finally;
-  var ForEachStatement = traceur.syntax.trees.ForEachStatement;
+  var ForOfStatement = traceur.syntax.trees.ForOfStatement;
   var ForInStatement = traceur.syntax.trees.ForInStatement;
   var ForStatement = traceur.syntax.trees.ForStatement;
   var FormalParameterList = traceur.syntax.trees.FormalParameterList;
@@ -844,8 +844,8 @@ traceur.define('syntax', function() {
       this.eat_(TokenType.CLASS);
       var name = this.eatId_();
       var superClass = null;
-      if (this.peek_(TokenType.COLON)) {
-        this.eat_(TokenType.COLON);
+      if (this.peek_(TokenType.EXTENDS)) {
+        this.eat_(TokenType.EXTENDS);
         superClass = this.parseExpression_();
       }
       this.eat_(TokenType.OPEN_CURLY);
@@ -878,8 +878,8 @@ traceur.define('syntax', function() {
         case TokenType.IDENTIFIER:
         case TokenType.VAR:
         case TokenType.CONST:
-        case TokenType.CLASS:
-        case TokenType.NEW:
+        case TokenType.STATIC:
+        case TokenType.CONSTRUCTOR:
           return true;
         default:
           return false;
@@ -921,7 +921,7 @@ traceur.define('syntax', function() {
     parseFieldDeclaration_: function() {
       var start = this.getTreeStartLocation_();
 
-      var isStatic = this.eatOpt_(TokenType.CLASS) != null;
+      var isStatic = this.eatOpt_(TokenType.STATIC) != null;
 
       var binding = this.peekType_();
       var isConst = false;
@@ -1004,7 +1004,7 @@ traceur.define('syntax', function() {
      */
     parseMethodDeclaration_: function(allowStatic) {
       var start = this.getTreeStartLocation_();
-      var isStatic = allowStatic && this.eatOpt_(TokenType.CLASS) != null;
+      var isStatic = allowStatic && this.eatOpt_(TokenType.STATIC) != null;
       if (this.peekFunction_()) {
         this.nextToken_(); // function or #
       }
@@ -1016,7 +1016,7 @@ traceur.define('syntax', function() {
      * @private
      */
     peekMethodDeclaration_: function() {
-      var index = this.peek_(TokenType.CLASS) ? 1 : 0;
+      var index = this.peek_(TokenType.STATIC) ? 1 : 0;
       return this.peekFunction_(index) ||
           (this.peek_(TokenType.IDENTIFIER, index) && this.peek_(TokenType.OPEN_PAREN, index + 1));
     },
@@ -1027,7 +1027,7 @@ traceur.define('syntax', function() {
      */
     parseConstructorDeclaration_: function() {
       var start = this.getTreeStartLocation_();
-      var isStatic = this.eatOpt_(TokenType.CLASS) != null;
+      var isStatic = this.eatOpt_(TokenType.STATIC) != null;
       return this.parseFunctionDeclarationTail_(start, isStatic, this.eatIdName_());
     },
 
@@ -1036,8 +1036,8 @@ traceur.define('syntax', function() {
      * @private
      */
     peekConstructorDeclaration_: function() {
-      var index = this.peek_(TokenType.CLASS) ? 1 : 0;
-      return this.peek_(TokenType.NEW, index) &&
+      var index = this.peek_(TokenType.STATIC) ? 1 : 0;
+      return this.peek_(TokenType.CONSTRUCTOR, index) &&
           this.peek_(TokenType.OPEN_PAREN, index + 1);
     },
 
@@ -1568,18 +1568,18 @@ traceur.define('syntax', function() {
           }
 
           return this.parseForInStatement_(start, variables);
-        } else if (this.peek_(TokenType.COLON)) {
-          // for-in: only one declaration allowed
+        } else if (this.peekPredefinedString_(PredefinedName.OF)) {
+          // for-of: only one declaration allowed
           if (variables.declarations.length > 1) {
-            this.reportError_('for-each statement may not have more than one variable declaration');
+            this.reportError_('for-of statement may not have more than one variable declaration');
           }
-          // for-each: initializer is illegal
+          // for-of: initializer is illegal
           var declaration = variables.declarations[0];
           if (declaration.initializer != null) {
-            this.reportError_('for-each statement may not have initializer');
+            this.reportError_('for-of statement may not have initializer');
           }
 
-          return this.parseForEachStatement_(start, variables);
+          return this.parseForOfStatement_(start, variables);
         } else {
           // for statement: let and const must have initializers
           this.checkInitializers_(variables);
@@ -1600,19 +1600,19 @@ traceur.define('syntax', function() {
     },
 
     // The for-each Statement
-    // for  (  { let | var }  identifier  :  expression  )  statement
+    // for  (  { let | var }  identifier  of  expression  )  statement
     /**
      * @param {SourcePosition} start
      * @param {VariableDeclarationList} initializer
      * @return {ParseTree}
      * @private
      */
-    parseForEachStatement_: function(start, initializer) {
-      this.eat_(TokenType.COLON);
+    parseForOfStatement_: function(start, initializer) {
+      this.eatId_(); // of
       var collection = this.parseExpression_();
       this.eat_(TokenType.CLOSE_PAREN);
       var body = this.parseStatement_();
-      return new ForEachStatement(this.getTreeLocation_(start), initializer, collection, body);
+      return new ForOfStatement(this.getTreeLocation_(start), initializer, collection, body);
     },
 
     /**
@@ -2162,7 +2162,7 @@ traceur.define('syntax', function() {
      * @private
      */
     peekGetAccessor_: function(allowStatic) {
-      var index = allowStatic && this.peek_(TokenType.CLASS) ? 1 : 0;
+      var index = allowStatic && this.peek_(TokenType.STATIC) ? 1 : 0;
       return this.peekPredefinedString_(PredefinedName.GET, index) && this.peekPropertyName_(index + 1);
     },
 
@@ -2181,7 +2181,7 @@ traceur.define('syntax', function() {
      */
     parseGetAccessor_: function() {
       var start = this.getTreeStartLocation_();
-      var isStatic = this.eatOpt_(TokenType.CLASS) != null;
+      var isStatic = this.eatOpt_(TokenType.STATIC) != null;
       this.eatId_(); // get
       var propertyName = this.nextToken_();
       this.eat_(TokenType.OPEN_PAREN);
@@ -2196,7 +2196,7 @@ traceur.define('syntax', function() {
      * @private
      */
     peekSetAccessor_: function(allowStatic) {
-      var index = allowStatic && this.peek_(TokenType.CLASS) ? 1 : 0;
+      var index = allowStatic && this.peek_(TokenType.STATIC) ? 1 : 0;
       return this.peekPredefinedString_(PredefinedName.SET, index) && this.peekPropertyName_(index + 1);
     },
 
@@ -2206,7 +2206,7 @@ traceur.define('syntax', function() {
      */
     parseSetAccessor_: function() {
       var start = this.getTreeStartLocation_();
-      var isStatic = this.eatOpt_(TokenType.CLASS) != null;
+      var isStatic = this.eatOpt_(TokenType.STATIC) != null;
       this.eatId_(); // set
       var propertyName = this.nextToken_();
       this.eat_(TokenType.OPEN_PAREN);

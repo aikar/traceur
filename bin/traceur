@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+var path = require('path');
+require('../')
+require(path.resolve(process.cwd(), process.argv[2]));
