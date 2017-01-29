@@ -1,5 +1,7 @@
 # Traceur
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/aikar/traceur.svg)](https://greenkeeper.io/)
+
 ## About
 Traceur provides support for Googles Traceur project which adds many enhanced
 features to the JavaScript language. For full details on what all Traceur does,
